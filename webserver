@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates an EC2 instance and a security group
+Parameters:
+    KeyName:
+        Description: "Name of an existing EC2 KeyPair to enable SSH access to the instance"
+        Type: "AWS::EC2::KeyPair::KeyName"
+        ConstraintDescription: "must be the name of an existing EC2 KeyPair"
+    VPCIPs:
+        Description: "VPC IDs"
+        Type: "AWS::EC2::VPC::Id"
+    SubnetIDs:
+        Description: "Subnet IDs"
+        Type: "AWS::EC2::Subnet::Id"
+
+Resources:
+    InstanceSecurityGroup:
+        Type: "AWS::EC2::SecurityGroup"
+        Properties:
+            Tags:
+                - Key: "Name"
+                  Value: "cloudformation-webserver"
+            VpcId: !Ref VPCIPs
+            GroupDescription: "Webserver security group"
+            SecurityGroupIngress:
+                - CidrIp: "0.0.0.0/0"
+                  Description: "Allowed from anywhere"
+                  FromPort: "22"
+                  ToPort: "22"
+                  IpProtocol: "tcp"
+                - CidrIp: "0.0.0.0/0"
+                  Description: "HTTP access from anywhere"
+                  FromPort: "80"
+                  ToPort: "80"
+                  IpProtocol: "tcp"
+
+    EC2Instance:
+        Type: "AWS::EC2::Instance"
+        Properties:
+            ImageId: "ami-02df9ea15c1778c9c"
+            InstanceType: "t2.micro"
+            SecurityGroupIds:
+                - !GetAtt InstanceSecurityGroup.GroupId
+            KeyName: !Ref KeyName
+            SubnetId: !Ref SubnetIDs
+            Tags:
+                - Key: "Name"
+                  Value: "cloudformation-webserver"
+            UserData:
+                Fn::Base64: !Sub |
+                    #!/bin/bash -xe
+                    sudo apt update
+                    sudo apt install apache2 -y
+                    echo "Hello World!" > /var/www/html/index.html
+
+Outputs:
+    PublicIp:
+        Description: "Instance Public IP"
+        Value: !GetAtt EC2Instance.PublicIp
