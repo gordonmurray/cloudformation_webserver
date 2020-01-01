@@ -4,12 +4,12 @@ Parameters:
     KeyName:
         Description: "Name of an existing EC2 KeyPair to enable SSH access to the instance"
         Type: "AWS::EC2::KeyPair::KeyName"
-        ConstraintDescription: "must be the name of an existing EC2 KeyPair"
-    VPCIPs:
-        Description: "VPC IDs"
+        ConstraintDescription: "Must be the name of an existing EC2 KeyPair"
+    VPCIP:
+        Description: "VPC ID"
         Type: "AWS::EC2::VPC::Id"
-    SubnetIDs:
-        Description: "Subnet IDs"
+    SubnetID:
+        Description: "Subnet ID"
         Type: "AWS::EC2::Subnet::Id"
 
 Resources:
@@ -19,7 +19,7 @@ Resources:
             Tags:
                 - Key: "Name"
                   Value: "cloudformation-webserver"
-            VpcId: !Ref VPCIPs
+            VpcId: !Ref VPCIP
             GroupDescription: "Webserver security group"
             SecurityGroupIngress:
                 - CidrIp: "0.0.0.0/0"
@@ -41,7 +41,7 @@ Resources:
             SecurityGroupIds:
                 - !GetAtt InstanceSecurityGroup.GroupId
             KeyName: !Ref KeyName
-            SubnetId: !Ref SubnetIDs
+            SubnetId: !Ref SubnetID
             Tags:
                 - Key: "Name"
                   Value: "cloudformation-webserver"
